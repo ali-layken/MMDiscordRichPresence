@@ -1,4 +1,34 @@
 BUILD_DIR := build
+HOST_BUILD_DIR := $(BUILD_DIR)/host
+
+HOST_CXX ?= clang++
+HOST_CXXFLAGS := -std=c++17 -O2 -fPIC
+
+DISCORD_SRC_DIR := discord
+DISCORD_SDK_ROOT    := discord/discord_social_sdk
+DISCORD_SDK_INC_DIR := $(DISCORD_SDK_ROOT)/include
+DISCORD_SDK_LIB_DIR := $(DISCORD_SDK_ROOT)/lib/release
+DISCORD_SDK_BIN_DIR := $(DISCORD_SDK_ROOT)/bin/release
+
+ifeq ($(OS),Windows_NT)
+    # Windows
+    DISCORD_LINK_LIB   := $(DISCORD_SDK_LIB_DIR)/discord_partner_sdk.lib
+    DISCORD_SHARED_BIN := $(DISCORD_SDK_BIN_DIR)/discord_partner_sdk.dll
+    DISCORD_HOST_LIB   := $(HOST_BUILD_DIR)/discord_integration.dll
+    HOST_LDFLAGS       := -shared $(DISCORD_LINK_LIB)
+else ifneq ($(shell uname),Darwin)
+    # Linux
+    DISCORD_LINK_LIB   := $(DISCORD_SDK_LIB_DIR)/libdiscord_partner_sdk.so
+    DISCORD_SHARED_BIN := $(DISCORD_SDK_LIB_DIR)/libdiscord_partner_sdk.so
+    DISCORD_HOST_LIB   := $(HOST_BUILD_DIR)/libdiscord_integration.so
+    HOST_LDFLAGS       := -shared $(DISCORD_LINK_LIB)
+else
+    # macOS
+    DISCORD_LINK_LIB   := $(DISCORD_SDK_LIB_DIR)/libdiscord_partner_sdk.dylib
+    DISCORD_SHARED_BIN := $(DISCORD_SDK_LIB_DIR)/libdiscord_partner_sdk.dylib
+    DISCORD_HOST_LIB   := $(HOST_BUILD_DIR)/libdiscord_integration.dylib
+    HOST_LDFLAGS       := -shared $(DISCORD_LINK_LIB)
+endif
 
 # Allow the user to specify the compiler and linker on macOS
 # as Apple Clang does not support MIPS architecture
@@ -32,16 +62,21 @@ C_SRCS := $(call rwildcard,src,*.c)
 C_OBJS := $(addprefix $(BUILD_DIR)/, $(C_SRCS:.c=.o))
 C_DEPS := $(addprefix $(BUILD_DIR)/, $(C_SRCS:.c=.d))
 
+DISCORD_SRCS := $(call rwildcard,$(DISCORD_SRC_DIR),*.cpp)
+DISCORD_OBJS := $(addprefix $(BUILD_DIR)/, $(DISCORD_SRCS:.cpp=.o))
+DISCORD_DEPS := $(addprefix $(BUILD_DIR)/, $(DISCORD_SRCS:.cpp=.d))
+
 ALL_OBJS := $(C_OBJS)
 ALL_DEPS := $(C_DEPS)
-BUILD_DIRS := $(call getdirs,$(ALL_OBJS))
+BUILD_DIRS := $(call getdirs,$(ALL_OBJS) $(DISCORD_OBJS))
 
-all: $(TARGET)
+all: $(TARGET) $(DISCORD_HOST_LIB)
 
 $(TARGET): $(ALL_OBJS) $(LDSCRIPT) | $(BUILD_DIR)
 	$(LD) $(ALL_OBJS) $(LDFLAGS) -o $@
 
-$(BUILD_DIR) $(BUILD_DIRS):
+
+$(BUILD_DIR) $(BUILD_DIRS) $(HOST_BUILD_DIR):
 ifeq ($(OS),Windows_NT)
 	if not exist "$(subst /,\,$@)" mkdir "$(subst /,\,$@)"
 else
@@ -51,6 +86,12 @@ endif
 $(C_OBJS): $(BUILD_DIR)/%.o : %.c | $(BUILD_DIRS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -MMD -MF $(@:.o=.d) -c -o $@
 
+$(DISCORD_OBJS): $(BUILD_DIR)/%.o : %.cpp | $(BUILD_DIRS)
+	$(HOST_CXX) $(HOST_CXXFLAGS) -I $(DISCORD_SDK_INC_DIR) $< -MMD -MF $(@:.o=.d) -c -o $@
+
+$(DISCORD_HOST_LIB): $(DISCORD_OBJS) | $(HOST_BUILD_DIR)
+	$(HOST_CXX) $(HOST_CXXFLAGS) $(DISCORD_OBJS) $(HOST_LDFLAGS) -o $@
+
 clean:
 ifeq ($(OS),Windows_NT)
 	if exist $(BUILD_DIR) rmdir /S /Q $(BUILD_DIR)
@@ -58,7 +99,7 @@ else
 	rm -rf $(BUILD_DIR)
 endif
 
--include $(ALL_DEPS)
+-include $(ALL_DEPS) $(DISCORD_DEPS)
 
 .PHONY: clean all
 

@@ -11,3 +11,5 @@
 patches.map
 build/
 .vscode/settings.json
+/llm_context
+/discord/discord_social_sdk
