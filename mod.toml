@@ -13,7 +13,7 @@ game_id = "mm"
 minimum_recomp_version = "1.2.2"
 dependencies = []
 native_libraries = [
-    { name = "libdiscord_integration", funcs = ["init_discord_client"]},
+    { name = "libdiscord_integration", funcs = [ "init_discord_client", "update_discord_client", "update_discord_rich_presence"]},
 ]                   
 [inputs]
 elf_path = "build/mod.elf"
