@@ -12,10 +12,9 @@ authors = [ "SuperBeanEater3000" ]
 game_id = "mm"
 minimum_recomp_version = "1.2.2"
 dependencies = []
-optional_dependencies = []
 native_libraries = [
-    { name = "libdiscord_integration", funcs = []}
-]
+    { name = "libdiscord_integration", funcs = ["init_discord_client"]},
+]                   
 [inputs]
 elf_path = "build/mod.elf"
 mod_filename = "mm_recomp_discord_rich_presence"

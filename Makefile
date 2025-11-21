@@ -11,7 +11,6 @@ DISCORD_SDK_LIB_DIR := $(DISCORD_SDK_ROOT)/lib/release
 DISCORD_SDK_BIN_DIR := $(DISCORD_SDK_ROOT)/bin/release
 
 ifeq ($(OS),Windows_NT)
-
     DISCORD_LINK_LIB   := $(DISCORD_SDK_LIB_DIR)/discord_partner_sdk.lib
     DISCORD_SHARED_BIN := $(DISCORD_SDK_BIN_DIR)/discord_partner_sdk.dll
     DISCORD_HOST_LIB   := $(HOST_BUILD_DIR)/discord_integration.dll
@@ -20,16 +19,14 @@ else ifeq ($(shell uname),Darwin)
     DISCORD_LINK_LIB   := $(DISCORD_SDK_LIB_DIR)/libdiscord_partner_sdk.dylib
     DISCORD_SHARED_BIN := $(DISCORD_SDK_LIB_DIR)/libdiscord_partner_sdk.dylib
     DISCORD_HOST_LIB   := $(HOST_BUILD_DIR)/libdiscord_integration.dylib
-    HOST_LDFLAGS       := -shared -Wl,-rpath,'$$ORIGIN' $(DISCORD_LINK_LIB)
+    HOST_LDFLAGS       := -shared -Wl,-rpath,'@loader_path' $(DISCORD_LINK_LIB)
 else
     DISCORD_LINK_LIB   := $(DISCORD_SDK_LIB_DIR)/libdiscord_partner_sdk.so
     DISCORD_SHARED_BIN := $(DISCORD_SDK_LIB_DIR)/libdiscord_partner_sdk.so
     DISCORD_HOST_LIB   := $(HOST_BUILD_DIR)/libdiscord_integration.so
-    HOST_LDFLAGS       := -shared -Wl,-rpath,'$$ORIGIN' $(DISCORD_LINK_LIB)
+    HOST_LDFLAGS       := -shared -Wl,-rpath,\$$ORIGIN $(DISCORD_LINK_LIB)
 endif
 
-# Allow the user to specify the compiler and linker on macOS
-# as Apple Clang does not support MIPS architecture
 ifeq ($(OS),Windows_NT)
     CC      := clang
     LD      := ld.lld
@@ -74,18 +71,10 @@ $(TARGET): $(ALL_OBJS) $(LDSCRIPT) | $(BUILD_DIR)
 	$(LD) $(ALL_OBJS) $(LDFLAGS) -o $@
 
 $(BUILD_DIR):
-ifeq ($(OS),Windows_NT)
-	if not exist "$(subst /,\,$@)" mkdir "$(subst /,\,$@)"
-else
 	mkdir -p $@
-endif
 
 $(BUILD_DIRS) $(HOST_BUILD_DIR): | $(BUILD_DIR)
-ifeq ($(OS),Windows_NT)
-	if not exist "$(subst /,\,$@)" mkdir "$(subst /,\,$@)"
-else
 	mkdir -p $@
-endif
 
 $(C_OBJS): $(BUILD_DIR)/%.o : %.c | $(BUILD_DIRS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -MMD -MF $(@:.o=.d) -c -o $@
@@ -93,7 +82,10 @@ $(C_OBJS): $(BUILD_DIR)/%.o : %.c | $(BUILD_DIRS)
 $(DISCORD_OBJS): $(BUILD_DIR)/%.o : %.cpp | $(BUILD_DIRS)
 	$(HOST_CXX) $(HOST_CXXFLAGS) -I $(DISCORD_SDK_INC_DIR) $(CPPFLAGS) $< -MMD -MF $(@:.o=.d) -c -o $@
 
-$(DISCORD_HOST_LIB): $(DISCORD_OBJS) | $(HOST_BUILD_DIR)
+$(HOST_BUILD_DIR)/libdiscord_partner_sdk.so: $(DISCORD_SHARED_BIN) | $(HOST_BUILD_DIR)
+	cp $(DISCORD_SHARED_BIN) $@
+
+$(DISCORD_HOST_LIB): $(DISCORD_OBJS) $(HOST_BUILD_DIR)/libdiscord_partner_sdk.so | $(HOST_BUILD_DIR)
 	$(HOST_CXX) $(HOST_CXXFLAGS) $(DISCORD_OBJS) $(HOST_LDFLAGS) -o $@
 
 clean:
