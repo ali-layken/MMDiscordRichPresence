@@ -28,8 +28,8 @@ else
 endif
 
 ifeq ($(OS),Windows_NT)
-    CC      := clang
-    LD      := ld.lld
+    CC      := "/c/Program Files/LLVM/bin/clang.exe"
+    LD      := "/c/Program Files/LLVM/bin/ld.lld.exe"
 else ifneq ($(shell uname),Darwin)
     CC      := clang
     LD      := ld.lld
@@ -89,11 +89,7 @@ $(DISCORD_HOST_LIB): $(DISCORD_OBJS) $(HOST_BUILD_DIR)/libdiscord_partner_sdk.so
 	$(HOST_CXX) $(HOST_CXXFLAGS) $(DISCORD_OBJS) $(HOST_LDFLAGS) -o $@
 
 clean:
-ifeq ($(OS),Windows_NT)
-	if exist $(BUILD_DIR) rmdir /S /Q $(BUILD_DIR)
-else
 	rm -rf $(BUILD_DIR)
-endif
 
 -include $(ALL_DEPS) $(DISCORD_DEPS)
 
