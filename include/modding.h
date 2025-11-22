@@ -19,9 +19,10 @@
     EXTERNC __attribute__((noinline, weak, used, section(".recomp_import." mod))) func {} \
     _Pragma("GCC diagnostic pop")
 
-#define RECOMP_EXPORT EXTERNC __attribute__((retain, section(".recomp_export")))    
+#define RECOMP_EXPORT EXTERNC __attribute__((retain, section(".recomp_export"))) 
+#define DLLEXPORT EXTERNC __declspec(dllexport)   
 #define RECOMP_EXPORT_FUNC EXTERNC __attribute__((retain, section(".recomp.export.text")))
-#define RECOMP_EXPORT_DATA EXTERNC __attribute__((retain, section(".recomp.export.data")))
+#define RECOMP_EXPORT_DATA EXTERNC __attribute__((retain, section(".recompexport.data")))
 
 #define RECOMP_PATCH EXTERNC __attribute__((retain, section(".recomp_patch")))
 

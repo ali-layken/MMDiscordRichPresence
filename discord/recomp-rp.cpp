@@ -74,20 +74,18 @@ static void discord_rp_update() {
 }
 
 
-extern "C" { 
-    RECOMP_EXPORT_DATA uint32_t recomp_api_version = 1;
+DLLEXPORT uint32_t recomp_api_version = 1;
 
-    RECOMP_EXPORT_FUNC void init_discord_client() {
-        discord_startup();
-    }
-
-    RECOMP_EXPORT_FUNC void update_discord_client() {
-        discord_update();
-    }
-
-    RECOMP_EXPORT_FUNC void update_discord_rich_presence(){
-        discord_rp_update();
-    }
-
+DLLEXPORT void init_discord_client() {
+    discord_startup();
 }
+
+DLLEXPORT void update_discord_client() {
+    discord_update();
+}
+
+DLLEXPORT void update_discord_rich_presence(){
+    discord_rp_update();
+}
+
 

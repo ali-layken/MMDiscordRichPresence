@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#export HOST_CXX=clang++
+#export CC=clang
+#export LD=ld.lld
+
 echo "🧹 Cleaning build..."
 make clean
 
