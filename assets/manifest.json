@@ -1,0 +1,7 @@
+{
+    "name": "Discord Rich Presence",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/ali-layken/MMDiscordRichPresence",
+    "description": "Share In-Game Activity on Discord!",
+    "dependencies": []
+}
