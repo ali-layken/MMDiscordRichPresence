@@ -11,6 +11,7 @@
 class DiscordIntegration{
     public:
         DiscordIntegration(){
+            printf("in construuctor!");
             client = std::make_shared<discordpp::Client>();
             client->SetApplicationId(APPLICATION_ID);
 
@@ -81,17 +82,18 @@ class DiscordIntegration{
 
 static DiscordIntegration* g_discord = nullptr;
 
-DLLEXPORT uint32_t recomp_api_version = 1;
+RECOMP_EXPORT_DATA uint32_t recomp_api_version = 1;
 
-DLLEXPORT void init_discord_client() {
+RECOMP_EXPORT_FUNC void init_discord_client() {
+    printf("in init recomp");
     if (!g_discord) g_discord = new DiscordIntegration();
 }
 
-DLLEXPORT void update_discord_client() {
+RECOMP_EXPORT_FUNC void update_discord_client() {
     if (g_discord) g_discord->UpdateClient();
 }
 
-DLLEXPORT void update_discord_rich_presence(){
+RECOMP_EXPORT_FUNC void update_discord_rich_presence(){
     if (g_discord) g_discord->UpdateRP();
 }
 

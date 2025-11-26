@@ -1,7 +1,7 @@
 BUILD_DIR := build
 HOST_BUILD_DIR := $(BUILD_DIR)/host
 
-HOST_CXXFLAGS := -std=c++17 -O2 
+HOST_CXXFLAGS := -std=c++17 -fPIC -O2 
 HOST_CXX ?= clang++
 CC ?= clang
 LD ?= ld.lld
@@ -22,7 +22,6 @@ DISCORD_SHARED_BIN  := $(DISCORD_SDK_BIN_DIR)/discord_partner_sdk.dll
 DISCORD_HOST_LIB    := $(HOST_BUILD_DIR)/discord_integration.dll
 DISCORD_RUNTIME_DLL := $(HOST_BUILD_DIR)/discord_partner_sdk.dll
 HOST_LDFLAGS        := -shared "$(DISCORD_LINK_LIB)"
-
 MKDIR := mkdir
 COPY := copy /Y
 fix_path  = $(subst /,\,$1)
