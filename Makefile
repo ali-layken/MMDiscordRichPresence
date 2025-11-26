@@ -43,6 +43,7 @@ HOST_LDFLAGS        := -shared -Wl,-rpath,\$$ORIGIN "$(DISCORD_LINK_LIB)"
 MKDIR := mkdir -p
 COPY := cp
 fix_path  = $1
+CC := /usr/local/Cellar/llvm@18/18.1.8/bin/clang++
 endif
 
 
